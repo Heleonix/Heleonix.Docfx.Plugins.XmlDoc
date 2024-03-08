@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>template/plugins</ContentTargetFolders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Heleonix.Docfx.Plugins.XmlDoc.settings.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Docfx.Common" Version="2.75.2" PrivateAssets="all" />
+    <PackageReference Include="Docfx.DataContracts.Common" Version="2.75.2" PrivateAssets="all" />
+    <PackageReference Include="Docfx.Plugins" Version="2.75.2" PrivateAssets="all" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.58" PrivateAssets="all" />
+    <PackageReference Include="System.Composition" Version="8.0.0" PrivateAssets="all" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="codecracker.CSharp" Version="1.1.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.54.0.64047" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+  </ItemGroup>
+
+  <Target Name="IncludeCustomPackageFiles" AfterTargets="Build">
+    <ItemGroup>
+      <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
+      <None Include="$(OutputPath)$(AssemblyName).xml" Pack="true" PackagePath="$(ContentTargetFolders)" />
+      <None Include="$(OutputPath)HtmlAgilityPack.dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
+    </ItemGroup>
+  </Target>
+</Project>
