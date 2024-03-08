@@ -1,0 +1,50 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Description>The Docfx plugin to generate documentation from xml-based files via intermediate XSLT transformation into Markdown.</Description>
+    <PackageTags>Docfx plugin XSD XML Markdown documentation</PackageTags>
+
+    <Authors>Heleonix - Hennadii Lutsyshyn</Authors>
+    <Copyright>Copyright (c) Heleonix - Hennadii Lutsyshyn</Copyright>
+
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Heleonix/Heleonix.Docfx.Plugins.XmlDoc</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Heleonix/Heleonix.Docfx.Plugins.XmlDoc.git</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/Heleonix/docs/master/images/heleonix-logos/Heleonix-logo-128x128.jpg</PackageIconUrl>
+
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="/"/>
+    <None Include="..\..\README.md" Pack="true" PackagePath="/"/>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+</Project>

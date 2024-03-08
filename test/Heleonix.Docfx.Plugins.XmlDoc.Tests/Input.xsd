@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema xmlns:msb="http://schemas.microsoft.com/developer/msbuild/2003"
+           elementFormDefault="qualified"
+           targetNamespace="http://schemas.microsoft.com/developer/msbuild/2003"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include
+    schemaLocation="C:/Program Files/Microsoft Visual Studio/2022/Community/Xml/Schemas/1033/MSBuild/Microsoft.Build.Commontypes.xsd" />
+
+  <xs:element name="Hx_NetBuild_ArtifactsDir" type="msb:StringPropertyType" substitutionGroup="msb:Property">
+    <xs:annotation>
+      <xs:documentation>A path to the NetBuild artifacts directory.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_SlnFile" type="msb:StringPropertyType" substitutionGroup="msb:Property">
+    <xs:annotation>
+      <xs:documentation>A path to the solution file to build. Default is a .sln file found in the $Hx_WS_Dir.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_SnkFile" type="msb:StringPropertyType" substitutionGroup="msb:Property">
+    <xs:annotation>
+      <xs:documentation>The file with public/private keys pair to sign assemblies.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_Version" type="msb:StringPropertyType" substitutionGroup="msb:Property">
+    <xs:annotation>
+      <xs:documentation>
+        The semantic version. It is passed as /p:Version property to the Build target.
+        Default is a version retrieved from $Hx_ChangeLog_ArtifactsDir/semver.txt.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_AssemblyVersion" type="msb:StringPropertyType" substitutionGroup="msb:Property">
+    <xs:annotation>
+      <xs:documentation>
+        The .NET Assembly version, like '1.0.0.0'. It is passed as /p:AssemblyVersion property to the Build target.
+        Default version is composed as $Hx_NetBuild_Version.$Hx_Run_Number.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_ReleaseNotesFile" type="msb:StringPropertyType" substitutionGroup="msb:Property">
+    <xs:annotation>
+      <xs:documentation>
+        A text file with package release notes. It is passed as /p:PackageReleaseNotes property into the Build target.
+        Default is $Hx_ChangeLog_ArtifactsDir/ReleaseNotes.txt.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:element name="Hx_NetBuild_DeleteFiles" type="msb:SimpleItemType" substitutionGroup="msb:Item">
+    <xs:annotation>
+      <xs:documentation>Files to delete during cleaning.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_DeleteDirs" type="msb:SimpleItemType" substitutionGroup="msb:Item">
+    <xs:annotation>
+      <xs:documentation>Directories to delete during cleaning.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_CleanDirs" type="msb:SimpleItemType" substitutionGroup="msb:Item">
+    <xs:annotation>
+      <xs:documentation>Directories to clean but not delete during cleaning.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Hx_NetBuild_CustomArtifactsFiles" type="msb:SimpleItemType" substitutionGroup="msb:Item">
+    <xs:annotation>
+      <xs:documentation>Custom files to be copied to the artifacts directory.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+</xs:schema>
