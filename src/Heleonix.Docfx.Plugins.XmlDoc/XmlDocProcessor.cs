@@ -136,6 +136,11 @@ public class XmlDocProcessor : IDocumentProcessor
             content[key] = value;
         }
 
+        if (PathUtility.IsRelativePath(fileMetadata.Xslt))
+        {
+            content[FileMetadata.XsltKey] = Path.Combine(EnvironmentContext.BaseDirectory, fileMetadata.Xslt);
+        }
+
         content[Constants.PropertyName.SystemKeys] = this.systemKeys;
 
         var localPathFromRoot = PathUtility.MakeRelativePath(
