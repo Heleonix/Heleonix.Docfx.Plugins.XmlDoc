@@ -324,5 +324,8 @@ ASALocalRun/
 # MSBuild Binary and Structured Log
 *.binlog
 
+# Visual Studio 2022 folders
+Visual Studio 2022
+
 # Custom
 Hx_Artifacts/

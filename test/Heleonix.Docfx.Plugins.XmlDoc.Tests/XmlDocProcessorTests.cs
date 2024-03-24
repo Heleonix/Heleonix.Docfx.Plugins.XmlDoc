@@ -201,6 +201,7 @@ public static class XmlDocProcessorTests
                     {
                         { "key1", 111 },
                         { "key2", 222 },
+                        { FileMetadata.XsltKey, "./relative/to/docfx-json/transform.xslt" },
                     }.ToImmutableDictionary();
                 });
 
@@ -217,6 +218,9 @@ public static class XmlDocProcessorTests
 
                     Assert.That(content["key1"], Is.EqualTo(111));
                     Assert.That(content["key2"], Is.EqualTo(222));
+                    Assert.That(
+                        content[FileMetadata.XsltKey],
+                        Is.EqualTo(Path.Combine(EnvironmentContext.BaseDirectory, metadata[FileMetadata.XsltKey] as string)));
 
                     Assert.That(content[Constants.PropertyName.SystemKeys], Has.Length.EqualTo(8));
 

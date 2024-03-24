@@ -11,6 +11,7 @@ using System.Collections.Immutable;
 using System.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -88,7 +89,7 @@ public class XmlDocBuildStep : IDocumentBuildStep
                 continue;
             }
 
-            var content = (IDictionary<string, object>)model.Content;
+            var content = (Dictionary<string, object>)model.Content;
 
             var metadata = FileMetadata.From(content);
 
@@ -162,28 +163,33 @@ public class XmlDocBuildStep : IDocumentBuildStep
                 continue;
             }
 
+            var treeItem = new TreeItem();
+
+            treeItem.Metadata[Constants.PropertyName.Name] = content[Constants.PropertyName.Title];
+            treeItem.Metadata[Constants.PropertyName.Href] = model.Key;
+            treeItem.Metadata[Constants.PropertyName.TopicHref] = model.Key;
+
+            if (content.ContainsKey("_appName"))
+            {
+                treeItem.Metadata["_appName"] = content["_appName"];
+            }
+
+            if (content.ContainsKey("_appTitle"))
+            {
+                treeItem.Metadata["_appTitle"] = content["_appTitle"];
+            }
+
+            if (content.ContainsKey("_enableSearch"))
+            {
+                treeItem.Metadata["_enableSearch"] = content["_enableSearch"];
+            }
+
             tocRestructions.Add(new ()
             {
                 ActionType = metadata.Toc.Action,
                 TypeOfKey = metadata.Toc.Key.StartsWith("~") ? TreeItemKeyType.TopicHref : TreeItemKeyType.TopicUid,
                 Key = metadata.Toc.Key,
-                RestructuredItems = new List<TreeItem>
-                {
-                    new TreeItem
-                    {
-                        Metadata = new Dictionary<string, object>
-                        {
-                            { "name", content[Constants.PropertyName.Title] as string },
-                            { Constants.PropertyName.Href, model.Key },
-                            { Constants.PropertyName.TopicHref, model.Key },
-
-                            // { "memberLayout", "SamePage" },
-                            { "_appName", content["_appName"] },
-                            { "_appTitle", content["_appTitle"] },
-                            { "_enableSearch", content["_enableSearch"] },
-                        },
-                    },
-                }.ToImmutableList(),
+                RestructuredItems = new List<TreeItem> { treeItem }.ToImmutableList(),
             });
         }
 
