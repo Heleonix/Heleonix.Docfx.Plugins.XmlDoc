@@ -1,5 +1,7 @@
 # Heleonix.Docfx.Plugins.XmlDoc
 
+[![Release: .NET / NuGet](https://github.com/Heleonix/Heleonix.Docfx.Plugins.XmlDoc/actions/workflows/release-net-nuget.yml/badge.svg)](https://github.com/Heleonix/Heleonix.Docfx.Plugins.XmlDoc/actions/workflows/release-net-nuget.yml)
+
 The Docfx plugin to generate documentation from xml-based files via intermediate XSLT transformation into Markdown.
 
 ## Install
@@ -87,7 +89,7 @@ Hrefs to such files can be specified as `internal-store-folder/your-file.xsd`.
 4. [Request review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review) from the code owner
 5. Once approved, merge your Pull Request via [Squash and merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits)
 
-   > [!IMPORTANT]  
+   > **IMPORTANT**  
    > While merging, enter a [Conventional Commits](https://www.conventionalcommits.org/) commit message.
    > This commit message will be used in automatically generated [Github Release Notes](https://github.com/Heleonix/Heleonix.Docfx.Plugins.XmlDoc/releases)
    > and [NuGet Release Notes](https://www.nuget.org/packages/Heleonix.Docfx.Plugins.XmlDoc/#releasenotes-body-tab)
