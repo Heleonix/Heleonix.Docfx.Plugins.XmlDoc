@@ -325,7 +325,7 @@ ASALocalRun/
 *.binlog
 
 # Visual Studio 2022 folders
-Visual Studio 2022
+Visual Studio 2022/
 
 # Custom
 Hx_Artifacts/
