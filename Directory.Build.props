@@ -12,12 +12,9 @@
     <PackageProjectUrl>https://github.com/Heleonix/Heleonix.Docfx.Plugins.XmlDoc.git</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Heleonix/docs/master/images/heleonix-logos/Heleonix-logo-128x128.jpg</PackageIconUrl>
 
-    <IncludeSymbols>false</IncludeSymbols>
-    <IncludeSource>false</IncludeSource>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoWarn>NU5048;NU5100;NU5128</NoWarn>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
