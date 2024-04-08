@@ -36,7 +36,7 @@ namespace Heleonix.Docfx.Plugins.XmlDoc.Tests
                     Should("return the empty FileMetadata instance", () =>
                     {
                         Assert.That(metadata.Store, Is.Null);
-                        Assert.That(metadata.Xslt, Is.Null);
+                        Assert.That(metadata.Template, Is.Null);
                         Assert.That(metadata.Toc, Is.Null);
                     });
                 });
@@ -46,7 +46,7 @@ namespace Heleonix.Docfx.Plugins.XmlDoc.Tests
                     dictionary = new Dictionary<string, object>
                     {
                         { FileMetadata.StoreKey, "./store" },
-                        { FileMetadata.XsltKey, "./transform.xslt" },
+                        { FileMetadata.TemplateKey, "./transform.xslt" },
                         {
                             FileMetadata.TocKey, new Dictionary<string, object>
                             {
@@ -59,7 +59,7 @@ namespace Heleonix.Docfx.Plugins.XmlDoc.Tests
                     Should("return the filled in FileMetadata instance", () =>
                     {
                         Assert.That(metadata.Store, Is.EqualTo("./store"));
-                        Assert.That(metadata.Xslt, Is.EqualTo("./transform.xslt"));
+                        Assert.That(metadata.Template, Is.EqualTo("./transform.xslt"));
                         Assert.That(metadata.Toc.Key, Is.EqualTo("SomeToc"));
                         Assert.That(metadata.Toc.Action, Is.EqualTo(TreeItemActionType.InsertAfter));
                     });
@@ -70,13 +70,13 @@ namespace Heleonix.Docfx.Plugins.XmlDoc.Tests
                     dictionary = new Dictionary<string, object>
                     {
                         { FileMetadata.StoreKey, "./store" },
-                        { FileMetadata.XsltKey, "./transform.xslt" },
+                        { FileMetadata.TemplateKey, "./transform.xslt" },
                     };
 
                     Should("return the filled in FileMetadata instance without TOC", () =>
                     {
                         Assert.That(metadata.Store, Is.EqualTo("./store"));
-                        Assert.That(metadata.Xslt, Is.EqualTo("./transform.xslt"));
+                        Assert.That(metadata.Template, Is.EqualTo("./transform.xslt"));
                         Assert.That(metadata.Toc.Key, Is.Null);
                         Assert.That(metadata.Toc.Action, Is.EqualTo(TreeItemActionType.ReplaceSelf));
                     });

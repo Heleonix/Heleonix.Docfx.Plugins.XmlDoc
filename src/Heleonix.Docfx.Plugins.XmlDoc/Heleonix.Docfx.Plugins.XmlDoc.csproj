@@ -22,11 +22,12 @@
     <PackageReference Include="Docfx.Plugins" Version="2.75.2" PrivateAssets="all" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.58" PrivateAssets="all" />
     <PackageReference Include="System.Composition" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="RazorEngineCore" Version="2022.8.1" />
 
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="codecracker.CSharp" Version="1.1.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.54.0.64047" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.23.1.88495" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
   </ItemGroup>
 
@@ -35,6 +36,10 @@
       <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
       <None Include="$(OutputPath)$(AssemblyName).xml" Pack="true" PackagePath="$(ContentTargetFolders)" />
       <None Include="$(OutputPath)HtmlAgilityPack.dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
+      <None Include="$(OutputPath)RazorEngineCore.dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
+      <None Include="$(OutputPath)Microsoft.AspNetCore.Razor.Language.dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
+      <None Include="$(OutputPath)Microsoft.CodeAnalysis.CSharp.dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
+      <None Include="$(OutputPath)Microsoft.CodeAnalysis.dll" Pack="true" PackagePath="$(ContentTargetFolders)" />
     </ItemGroup>
   </Target>
 </Project>

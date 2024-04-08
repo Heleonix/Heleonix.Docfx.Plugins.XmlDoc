@@ -15,12 +15,5 @@
   <xsl:value-of select="normalize-space(xs:annotation/xs:documentation)"/>
 <xsl:text>&#x0A;</xsl:text>
 </xsl:for-each>
-### Items
-<xsl:for-each select="xs:schema/xs:element[@substitutionGroup='msb:Item']">
-#### <xsl:value-of select="@name"/>
-<xsl:text>&#x0A;&#x0A;</xsl:text>
-  <xsl:value-of select="normalize-space(xs:annotation/xs:documentation)"/>
-  <xsl:text>&#x0A;</xsl:text>
-    </xsl:for-each>
   </xsl:template>
 </xsl:stylesheet>
