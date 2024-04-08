@@ -74,7 +74,8 @@ public class XmlDocProcessor : IDocumentProcessor
     /// otherwise <see cref="ProcessingPriority.NotSupported"/>.</returns>
     public ProcessingPriority GetProcessingPriority(FileAndType file)
     {
-        if (file.Type == DocumentType.Article && this.Settings.SupportedFormats.Contains(Path.GetExtension(file.File)))
+        if (file.Type == DocumentType.Article
+            && this.Settings.SupportedFormats.Contains(Path.GetExtension(file.File), StringComparer.OrdinalIgnoreCase))
         {
             this.ContentFiles.TryAdd(file.File, string.Empty);
 
@@ -136,9 +137,9 @@ public class XmlDocProcessor : IDocumentProcessor
             content[key] = value;
         }
 
-        if (PathUtility.IsRelativePath(fileMetadata.Xslt))
+        if (PathUtility.IsRelativePath(fileMetadata.Template))
         {
-            content[FileMetadata.XsltKey] = Path.Combine(EnvironmentContext.BaseDirectory, fileMetadata.Xslt);
+            content[FileMetadata.TemplateKey] = Path.Combine(EnvironmentContext.BaseDirectory, fileMetadata.Template);
         }
 
         content[Constants.PropertyName.SystemKeys] = this.systemKeys;

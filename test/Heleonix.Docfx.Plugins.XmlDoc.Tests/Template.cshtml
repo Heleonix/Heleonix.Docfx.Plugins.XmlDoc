@@ -1,0 +1,35 @@
+﻿@using System
+@using System.IO
+@using System.Xml.Linq
+@inherits RazorEngineCore.RazorEngineTemplateBase<XDocument>
+@{
+    XDocument model = Model;
+    XNamespace xs = "http://www.w3.org/2001/XMLSchema";
+
+    var fileName = Path.GetFileNameWithoutExtension(model.Document.BaseUri);
+    var elements = model.Document.Element(xs + "schema").Elements(xs + "element");
+    var desc = elements.FirstOrDefault(e => e.Attribute("name")?.Value == fileName)
+        ?.Element(xs + "annotation")
+        ?.Element(xs + "documentation")?.Value?.Trim();
+    var props = elements.Where(e => e.Attribute("substitutionGroup")?.Value == "msb:Property");
+}
+---
+uid: @fileName
+---
+
+# @fileName
+
+@desc
+
+@if (props.Count() > 0)
+{
+    <text>## Properties</text>
+    @:
+    foreach (var prop in props)
+    {
+        <text>#### @prop.Attribute("name").Value</text>
+        @:
+        <text>@prop.Element(xs + "annotation").Element(xs + "documentation").Value.Trim()</text>
+        @:
+    }
+}

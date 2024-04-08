@@ -4,6 +4,7 @@
 // </copyright>
 
 #pragma warning disable SA1200 // Using directives should be placed correctly
+global using global::Docfx.Plugins;
 global using Heleonix.Docfx.Plugins.XmlDoc;
 global using Heleonix.Testing.NUnit.Aaa;
 global using NUnit.Framework;

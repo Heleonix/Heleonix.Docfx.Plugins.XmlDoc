@@ -5,11 +5,15 @@
 
 namespace Heleonix.Docfx.Plugins.XmlDoc.Tests;
 
+using global::Docfx.Common;
 using global::Docfx.DataContracts.Common;
 using global::Docfx.Plugins;
 using Heleonix.Docfx.Plugins.XmlDoc;
+using Microsoft.CodeAnalysis;
 using Moq;
+using NUnit.Framework.Constraints;
 using System.Collections.Immutable;
+using System.Reflection;
 
 /// <summary>
 /// Tests the <see cref="XmlDocBuildStep"/>.
@@ -23,33 +27,44 @@ public static class XmlDocBuildStepTests
     [MemberTest(Name = nameof(XmlDocBuildStep.Prebuild))]
     public static void Prebuild()
     {
-        var xmlDocBuildStep = new XmlDocBuildStep();
         var hostMock = new Mock<IHostService>();
-        var ft = new FileAndType(Environment.CurrentDirectory, "Input.xsd", DocumentType.Article);
+        var transformerMock = new Mock<ITransformer>();
+        var headerHandlerMock = new Mock<IHeaderHandler>();
+        var tocHandlerMock = new Mock<ITocHandler>();
+        var xmlDocBuildStep = new XmlDocBuildStep
+        {
+            Transformer = transformerMock.Object,
+            HeaderHandler = headerHandlerMock.Object,
+            TocHandler = tocHandlerMock.Object,
+        };
+
+        var fileAndType = new FileAndType("X:/BaseDir", "file.xsd", DocumentType.Article);
         ImmutableList<FileModel> models = null;
-        string contentHtml = null;
-        ImmutableDictionary<string, object> yamlHeader = null;
         XmlDocProcessor processor = null;
         FileModel result = null;
-        Dictionary<string, object> metadata = null;
-
-        metadata = new Dictionary<string, object>
-        {
-            { FileMetadata.XsltKey, Path.Combine(Environment.CurrentDirectory, "Template.xslt") },
-        };
 
         Arrange(() =>
         {
             processor = new XmlDocProcessor();
 
-            processor.GetProcessingPriority(ft);
+            processor.GetProcessingPriority(fileAndType);
 
-            var model = processor.Load(ft, metadata.ToImmutableDictionary());
+            var metadata = new Dictionary<string, object>
+            {
+                { FileMetadata.TemplateKey, Path.Combine(Environment.CurrentDirectory, "Template.xslt") },
+            };
+
+            var model = processor.Load(fileAndType, metadata.ToImmutableDictionary());
+
+            model.Uids = new[] { new UidDefinition("some.uid", model.LocalPathFromRoot) }.ToImmutableArray();
+
+            transformerMock.Setup((ITransformer t) => t.Transform(model, hostMock.Object))
+                .Returns("Transformed MD").Verifiable();
 
             var markupResult = new MarkupResult
             {
-                Html = contentHtml,
-                YamlHeader = yamlHeader,
+                Html = "Markup Html",
+                YamlHeader = new Dictionary<string, object>().ToImmutableDictionary(),
                 LinkToFiles = new string[] { "link1" }.ToImmutableArray(),
                 FileLinkSources = new Dictionary<string, ImmutableList<LinkSourceInfo>>
                 {
@@ -62,12 +77,22 @@ public static class XmlDocBuildStepTests
                 }.ToImmutableDictionary(),
             };
 
-            models = new List<FileModel> { model }.ToImmutableList();
+            hostMock.SetupGet((IHostService hs) => hs.Processor)
+                .Returns(processor).Verifiable();
+            hostMock.Setup((IHostService hs) => hs.Markup("Transformed MD", fileAndType, false))
+                .Returns(markupResult).Verifiable();
 
-            hostMock.SetupGet((IHostService hostService) => hostService.Processor).Returns(processor);
-            hostMock.Setup((IHostService hostService) => hostService.Markup(
-                It.Is<string>(c => c.Contains("### Properties")), ft, false))
-                .Returns(markupResult);
+            headerHandlerMock.Setup((IHeaderHandler hh) => hh.ExtractH1("Markup Html"))
+                .Returns(("h1", "h1 raw", "Conceptual Content")).Verifiable();
+            headerHandlerMock.Setup((IHeaderHandler hh) => hh.HandleYamlHeader(markupResult.YamlHeader, model))
+                .Verifiable();
+            headerHandlerMock.Setup((IHeaderHandler hh) => hh.GetTitle(model, markupResult.YamlHeader, "h1"))
+                .Returns("Some Title").Verifiable();
+
+            tocHandlerMock.Setup((ITocHandler th) => th.HandleTocRestructions(model, It.IsAny<IList<TreeItemRestructure>>()))
+                .Verifiable();
+
+            models = new List<FileModel> { model }.ToImmutableList();
         });
 
         When("the method is called", () =>
@@ -77,30 +102,39 @@ public static class XmlDocBuildStepTests
                 result = xmlDocBuildStep.Prebuild(models, hostMock.Object).Single();
             });
 
-            And("there is a full html content", () =>
+            And("the content file model should be pre-built", () =>
             {
-                contentHtml = "<!DOCTYPE html><html><head></head><body><h1>Heading</h1><p>Content</p></body></html>";
-
-                Should("generate html content", () =>
+                Should("prebuild the passed model", () =>
                 {
                     var content = result.Content as IDictionary<string, object>;
 
-                    Assert.That(content[Constants.PropertyName.Conceptual], Contains.Substring("Content"));
-                    Assert.That(content[Constants.PropertyName.Title], Contains.Substring("Heading"));
-                    Assert.That(result.ManifestProperties.rawTitle, Is.Null);
+                    Assert.That(content["rawTitle"], Is.EqualTo("h1 raw"));
+                    Assert.That(result.ManifestProperties.rawTitle, Is.EqualTo("h1 raw"));
+                    Assert.That(content[Constants.PropertyName.Conceptual], Is.EqualTo("Conceptual Content"));
+                    Assert.That(content[Constants.PropertyName.Title], Is.EqualTo("Some Title"));
+
                     Assert.That(result.LinkToFiles, Contains.Item("link1"));
                     Assert.That(result.LinkToUids, Contains.Item("uid1"));
-                    Assert.That(result.FileLinkSources["key1"][0], Is.EqualTo("src1"));
-                    Assert.That(result.FileLinkSources["key2"][0], Is.EqualTo("src2"));
-                    Assert.That(result.Properties.XrefSpec, Is.Null);
+                    Assert.That(result.FileLinkSources["key1"][0].SourceFile, Is.EqualTo("src1"));
+                    Assert.That(result.UidLinkSources["key2"][0].SourceFile, Is.EqualTo("src2"));
+                    Assert.That(result.Properties.XrefSpec.Uid, Is.EqualTo(result.Uids[0].Name));
+                    Assert.That(result.Properties.XrefSpec.Name, Is.EqualTo("Some Title"));
+                    Assert.That(
+                        result.Properties.XrefSpec.Href,
+                        Is.EqualTo((string)((RelativePath)result.File).GetPathFromWorkingFolder()));
+
+                    hostMock.Verify();
+                    transformerMock.Verify();
+                    headerHandlerMock.Verify();
+                    tocHandlerMock.Verify();
                 });
             });
 
-            And("there is an unrecognized content file", () =>
+            And("there is an unrecognized content file model", () =>
             {
                 Arrange(() =>
                 {
-                    processor.ContentFiles.Remove(ft.File, out _);
+                    processor.ContentFiles.Remove(fileAndType.File, out _);
                 });
 
                 Should("skip the unrecognized file", () =>
@@ -108,207 +142,6 @@ public static class XmlDocBuildStepTests
                     var content = result.Content as IDictionary<string, object>;
 
                     Assert.That(content[Constants.PropertyName.Conceptual], Is.Empty);
-                });
-            });
-
-            And("Table Of Contents is specified in metadata to be added after Href item", () =>
-            {
-                metadata = new Dictionary<string, object>
-                {
-                    { FileMetadata.XsltKey, Path.Combine(Environment.CurrentDirectory, "Template.xslt") },
-                    {
-                        FileMetadata.TocKey,
-                        new Dictionary<string, object>
-                        {
-                            { "action", "InsertAfter" },
-                            { "key", "~/articles/introduction.md" },
-                        }
-                    },
-                    { "_appName", "App Name" },
-                    { "_appTitle", "App Title" },
-                    { "_enableSearch", true },
-                };
-
-                Should("generate html content with TOC restructions", () =>
-                {
-                    var content = result.Content as IDictionary<string, object>;
-
-                    Assert.That(content[Constants.PropertyName.Conceptual], Contains.Substring("Content"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].ActionType,
-                        Is.EqualTo(TreeItemActionType.InsertAfter));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].Key,
-                        Is.EqualTo("~/articles/introduction.md"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].TypeOfKey,
-                        Is.EqualTo(TreeItemKeyType.TopicHref));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].RestructuredItems[0].Metadata["name"],
-                        Is.EqualTo("Heading"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].RestructuredItems[0].Metadata["_appName"],
-                        Is.EqualTo("App Name"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].RestructuredItems[0].Metadata["_appTitle"],
-                        Is.EqualTo("App Title"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].RestructuredItems[0].Metadata["_enableSearch"],
-                        Is.True);
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].RestructuredItems[0].Metadata[Constants.PropertyName.Href],
-                        Is.EqualTo("~/articles/introduction.md"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].RestructuredItems[0].Metadata[Constants.PropertyName.TopicHref],
-                        Is.EqualTo("~/articles/introduction.md"));
-                });
-            });
-
-            And("Table Of Contents is specified in metadata to be added after Uid item", () =>
-            {
-                metadata = new Dictionary<string, object>
-                {
-                    { FileMetadata.XsltKey, Path.Combine(Environment.CurrentDirectory, "Template.xslt") },
-                    {
-                        FileMetadata.TocKey,
-                        new Dictionary<string, object>
-                        {
-                            { "action", "InsertAfter" },
-                            { "key", "introduction" },
-                        }
-                    },
-                    { "_appName", "App Name" },
-                    { "_appTitle", "App Title" },
-                    { "_enableSearch", true },
-                };
-
-                Should("generate html content with TOC restructions", () =>
-                {
-                    var content = result.Content as IDictionary<string, object>;
-
-                    Assert.That(content[Constants.PropertyName.Conceptual], Contains.Substring("Content"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].ActionType,
-                        Is.EqualTo(TreeItemActionType.InsertAfter));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].Key,
-                        Is.EqualTo("introduction"));
-                    Assert.That(
-                        hostMock.Object.TableOfContentRestructions[0].TypeOfKey,
-                        Is.EqualTo(TreeItemKeyType.TopicUid));
-                });
-            });
-
-            And("the loaded html content is a fragment of html document", () =>
-            {
-                contentHtml = "     <h1>Heading</h1>     <p>Text</p>";
-
-                Should("generate html content", () =>
-                {
-                    var content = result.Content as IDictionary<string, object>;
-
-                    Assert.That(content[Constants.PropertyName.Conceptual], Contains.Substring("Text"));
-                    Assert.That(content[Constants.PropertyName.Title], Contains.Substring("Heading"));
-                });
-
-                And("the html content fragment has a comment", () =>
-                {
-                    contentHtml = "<!--some comment--><h1>Heading</h1><p>Text</p>";
-
-                    Should("generate html content", () =>
-                    {
-                        var content = result.Content as IDictionary<string, object>;
-
-                        Assert.That(content[Constants.PropertyName.Conceptual], Contains.Substring("Text"));
-                        Assert.That(content[Constants.PropertyName.Title], Contains.Substring("Heading"));
-                    });
-                });
-            });
-
-            And("there is no 'h1' html tag", () =>
-            {
-                contentHtml = "<p>Text</p>";
-
-                Should("generate html content with the file name as a title", () =>
-                {
-                    var content = result.Content as IDictionary<string, object>;
-
-                    Assert.That(content[Constants.PropertyName.Conceptual], Contains.Substring("Text"));
-                    Assert.That(content[Constants.PropertyName.Title], Contains.Substring("Input"));
-                });
-            });
-
-            And("the 'h1' title is overwritten in metadata", () =>
-            {
-                metadata = new Dictionary<string, object>
-                {
-                    { FileMetadata.XsltKey, Path.Combine(Environment.CurrentDirectory, "Template.xslt") },
-                    { Constants.PropertyName.TitleOverwriteH1, "Header Overwrite" },
-                };
-
-                Should("generate html content with overridden title", () =>
-                {
-                    var content = result.Content as IDictionary<string, object>;
-
-                    Assert.That(content[Constants.PropertyName.Title], Is.EqualTo("Header Overwrite"));
-                });
-            });
-
-            And("there the 'h1' title is overwritten in global metadata", () =>
-            {
-                metadata = new Dictionary<string, object>
-                {
-                    { FileMetadata.XsltKey, Path.Combine(Environment.CurrentDirectory, "Template.xslt") },
-                    { Constants.PropertyName.Title, "Global Header" },
-                };
-
-                Should("generate html content with overridden title", () =>
-                {
-                    var content = result.Content as IDictionary<string, object>;
-
-                    Assert.That(content[Constants.PropertyName.Title], Is.EqualTo("Global Header"));
-                });
-            });
-
-            And("there is a yaml header specified", () =>
-            {
-                yamlHeader = new Dictionary<string, object>
-                {
-                    { Constants.PropertyName.Uid, "some-uid" },
-                    { Constants.PropertyName.DocumentType, "Conceptual" },
-                    { Constants.PropertyName.OutputFileName, "output-file-name.html" },
-                    { Constants.PropertyName.Title, "Some Title" },
-                    { "any_other_key", "any-other-value" },
-                }.ToImmutableDictionary();
-
-                Should("generate html content with properties specified in the yaml header", () =>
-                {
-                    var content = result.Content as IDictionary<string, object>;
-
-                    Assert.That(content[Constants.PropertyName.Uid], Contains.Substring("some-uid"));
-                    Assert.That(result.Uids[0].Name, Is.EqualTo("some-uid"));
-                    Assert.That(result.Uids[0].File, Is.EqualTo(models[0].LocalPathFromRoot));
-
-                    Assert.That(content[Constants.PropertyName.DocumentType], Is.EqualTo("Conceptual"));
-                    Assert.That(result.DocumentType, Is.EqualTo("Conceptual"));
-
-                    Assert.That(content[Constants.PropertyName.OutputFileName], Is.EqualTo("output-file-name.html"));
-                    Assert.That(result.File, Is.EqualTo("output-file-name.html"));
-
-                    Assert.That(content["any_other_key"], Is.EqualTo("any-other-value"));
-                });
-
-                And("the yaml header has incorrect output file name", () =>
-                {
-                    yamlHeader = new Dictionary<string, object>
-                    {
-                        { Constants.PropertyName.OutputFileName, "extra-path/output-file-name.html" },
-                    }.ToImmutableDictionary();
-
-                    Should("generate html content", () =>
-                    {
-                        Assert.That(result.File, Is.EqualTo(models[0].File));
-                    });
                 });
             });
         });

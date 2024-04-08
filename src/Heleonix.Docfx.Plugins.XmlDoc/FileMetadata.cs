@@ -10,46 +10,6 @@ using global::Docfx.Plugins;
 /// <summary>
 /// Represents the model of the supported <c>fileMetadata</c> specified for content files to be processed by this plugin.
 /// </summary>
-/// <example>
-/// An example of the docfx.json:
-/// <code>
-/// {
-///   "build": {
-///     "content": [
-///       {
-///         "files": [ "**/*.{md,yml}" ],
-///         "exclude": [ "_site/**" ]
-///       },
-///       {
-///         "files": [ "*.xsd" ],
-///         "src": "../../some-external-location"
-///       },
-///       {
-///         "files": [ "internal-store-folder/*.xsd" ]
-///       }
-///     ],
-///     "resource": [
-///       {
-///         "files": [ "images/**" ]
-///       }
-///     ],
-///     "output": "_site",
-///     "template": [
-///       "default",
-///       "templates/your-template-with"
-///     ],
-///     "fileMetadata": {
-///       "hx.xmldoc.xslt": { "**.xsd": "./xml-to-md.xslt" },
-///       "hx.xmldoc.store": { "../../some-external-location/*.xsd": "internal-store-folder" }
-///       "hx.xmldoc.toc": {
-///         "**/*-some.xsd": { "action": "InsertAfter", "key": "~/articles/introduction.md" },
-///         "**/*-other.xsd": { "action": "AppendChild", "key": "Namespace.Class.whatever.uid" }
-///       }
-///     }
-///   }
-/// }
-/// </code>
-/// </example>
 public class FileMetadata
 {
     /// <summary>
@@ -58,9 +18,9 @@ public class FileMetadata
     public const string StoreKey = "hx.xmldoc.store";
 
     /// <summary>
-    /// The name of the xslt key in the <c>fileMetadata</c> of content files.
+    /// The name of the template key in the <c>fileMetadata</c> of content files.
     /// </summary>
-    public const string XsltKey = "hx.xmldoc.xslt";
+    public const string TemplateKey = "hx.xmldoc.template";
 
     /// <summary>
     /// The name of the Table Of Contents key in the <c>fileMetadata</c>  of content files.
@@ -77,10 +37,10 @@ public class FileMetadata
     public string Store { get; set; }
 
     /// <summary>
-    /// The <c>hx.xmldoc.xslt</c> file metadata to specify a path to an XSLT file to transform XML-based content files
-    /// into Markdown for further generation of HTML output files styled with the documentation templates.
+    /// The <c>hx.xmldoc.template</c> file metadata to specify a path to a template file to transform XML-based
+    /// content files into Markdown for further generation of HTML output files styled with the documentation templates.
     /// </summary>
-    public string Xslt { get; set; }
+    public string Template { get; set; }
 
     /// <summary>
     /// The <c>hx.xmldoc.toc</c> file metadata to specify a configuration for
@@ -106,8 +66,8 @@ public class FileMetadata
         dictionary.TryGetValue(FileMetadata.StoreKey, out var obj);
         metadata.Store = obj as string;
 
-        dictionary.TryGetValue(FileMetadata.XsltKey, out obj);
-        metadata.Xslt = obj as string;
+        dictionary.TryGetValue(FileMetadata.TemplateKey, out obj);
+        metadata.Template = obj as string;
 
         dictionary.TryGetValue(FileMetadata.TocKey, out var tocObj);
         metadata.Toc = TocMetadata.From(tocObj as IDictionary<string, object>);
